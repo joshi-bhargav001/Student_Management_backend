@@ -4,7 +4,7 @@ import com.example.StdManagement.dto.StudentRequest;
 import com.example.StdManagement.dto.StudentResponse;
 import com.example.StdManagement.entity.Student;
 import com.example.StdManagement.exception.DuplicateResourceException;
-import com.example.StdManagement.exception.ResourceNotFoundException;
+import com.example.StdManagement.exception.StudentNotFoundException;
 import com.example.StdManagement.repository.StudentRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +76,7 @@ public class StudentServiceImpl implements StudentService {
 
     private Student findStudentById(Long id) {
         return studentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + id));
+                .orElseThrow(() -> new StudentNotFoundException("Student not found with id: " + id));
     }
 
     private StudentResponse mapToResponse(Student student) {
