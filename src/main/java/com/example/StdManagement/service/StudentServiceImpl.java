@@ -25,6 +25,7 @@ public class StudentServiceImpl implements StudentService {
         }
 
         Student student = Student.builder()
+                .rollNo(request.getRollNo())
                 .name(request.getName())
                 .email(request.getEmail())
                 .course(request.getCourse())
@@ -60,6 +61,7 @@ public class StudentServiceImpl implements StudentService {
         }
 
         student.setName(request.getName());
+        student.setRollNo(request.getRollNo());
         student.setEmail(request.getEmail());
         student.setCourse(request.getCourse());
         student.setMobile(request.getMobile());
@@ -82,6 +84,7 @@ public class StudentServiceImpl implements StudentService {
     private StudentResponse mapToResponse(Student student) {
         return StudentResponse.builder()
                 .id(student.getId())
+                .rollNo(student.getRollNo())
                 .name(student.getName())
                 .email(student.getEmail())
                 .course(student.getCourse())
