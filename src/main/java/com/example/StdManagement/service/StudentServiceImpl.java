@@ -23,6 +23,9 @@ public class StudentServiceImpl implements StudentService {
         if (studentRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("Student with email already exists: " + request.getEmail());
         }
+        if (studentRepository.existsByRollNo(request.getRollNo())) {
+            throw new DuplicateResourceException("Student with roll number already exists: " + request.getRollNo());
+        }
 
         Student student = Student.builder()
                 .rollNo(request.getRollNo())
@@ -58,6 +61,9 @@ public class StudentServiceImpl implements StudentService {
 
         if (studentRepository.existsByEmailAndIdNot(request.getEmail(), id)) {
             throw new DuplicateResourceException("Student with email already exists: " + request.getEmail());
+        }
+        if (studentRepository.existsByRollNoAndIdNot(request.getRollNo(), id)) {
+            throw new DuplicateResourceException("Student with roll number already exists: " + request.getRollNo());
         }
 
         student.setName(request.getName());

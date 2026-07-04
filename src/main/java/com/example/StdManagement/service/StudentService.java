@@ -4,7 +4,7 @@ import com.example.StdManagement.dto.StudentRequest;
 import com.example.StdManagement.dto.StudentResponse;
 import java.util.List;
 
-public interface StudentService {
+public interface StudentService{
 
     StudentResponse createStudent(StudentRequest request);
 
