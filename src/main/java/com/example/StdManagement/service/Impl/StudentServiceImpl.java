@@ -1,12 +1,14 @@
-package com.example.StdManagement.service;
+package com.example.StdManagement.service.Impl;
 
-import com.example.StdManagement.dto.StudentRequest;
-import com.example.StdManagement.dto.StudentResponse;
+import com.example.StdManagement.dto.Request.StudentRequest;
+import com.example.StdManagement.dto.Response.StudentResponse;
 import com.example.StdManagement.entity.Student;
 import com.example.StdManagement.exception.DuplicateResourceException;
 import com.example.StdManagement.exception.ResourceNotFoundException;
 import com.example.StdManagement.repository.StudentRepository;
 import java.util.List;
+
+import com.example.StdManagement.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

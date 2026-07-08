@@ -1,9 +1,10 @@
-package com.example.StdManagement.service;
+package com.example.StdManagement.service.Impl;
 
-import com.example.StdManagement.dto.LoginRequest;
-import com.example.StdManagement.dto.LoginResponse;
+import com.example.StdManagement.dto.Request.LoginRequest;
+import com.example.StdManagement.dto.Response.LoginResponse;
 import com.example.StdManagement.entity.User;
 import com.example.StdManagement.repository.LoginRepository;
+import com.example.StdManagement.service.LoginService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class LoginServiceImpl implements LoginService{
+public class LoginServiceImpl implements LoginService {
 
     private final LoginRepository loginRepository;
 

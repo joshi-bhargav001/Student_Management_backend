@@ -1,20 +1,22 @@
-package com.example.StdManagement.dto;
+package com.example.StdManagement.dto.Response;
 
 import com.example.StdManagement.enums.Role;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class LoginResponse {
+public class SignUpResponse {
 
     private Long id;
 
     private String name;
 
     private String username;
+
+    private String email;
 
     private Role role;
 }

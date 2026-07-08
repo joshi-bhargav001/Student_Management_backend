@@ -7,8 +7,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.example.StdManagement.dto.StudentRequest;
-import com.example.StdManagement.dto.StudentResponse;
+import com.example.StdManagement.dto.Request.StudentRequest;
+import com.example.StdManagement.dto.Response.StudentResponse;
 import com.example.StdManagement.entity.Student;
 import com.example.StdManagement.exception.DuplicateResourceException;
 import com.example.StdManagement.exception.ResourceNotFoundException;
@@ -16,6 +16,8 @@ import com.example.StdManagement.repository.StudentRepository;
 
 import java.util.List;
 import java.util.Optional;
+
+import com.example.StdManagement.service.Impl.StudentServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

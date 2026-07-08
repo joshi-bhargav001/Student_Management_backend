@@ -1,8 +1,8 @@
 package com.example.StdManagement.controller;
 
-import com.example.StdManagement.dto.ApiResponse;
-import com.example.StdManagement.dto.StudentRequest;
-import com.example.StdManagement.dto.StudentResponse;
+import com.example.StdManagement.dto.Response.ApiResponse;
+import com.example.StdManagement.dto.Request.StudentRequest;
+import com.example.StdManagement.dto.Response.StudentResponse;
 import com.example.StdManagement.service.StudentService;
 import jakarta.validation.Valid;
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.example.StdManagement.service;
 
-import com.example.StdManagement.dto.StudentRequest;
-import com.example.StdManagement.dto.StudentResponse;
+import com.example.StdManagement.dto.Request.StudentRequest;
+import com.example.StdManagement.dto.Response.StudentResponse;
 import java.util.List;
 
 public interface StudentService{

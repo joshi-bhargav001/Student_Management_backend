@@ -1,6 +1,6 @@
 package com.example.StdManagement.exception;
 
-import com.example.StdManagement.dto.ErrorResponse;
+import com.example.StdManagement.dto.Response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
