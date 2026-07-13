@@ -8,4 +8,6 @@ import com.example.StdManagement.dto.Response.SignUpResponse;
 public interface AuthService {
 
     SignUpResponse insertRegister(SignUpRequest request);
+
+    LoginResponse login(LoginRequest request);
 }
