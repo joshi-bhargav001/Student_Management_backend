@@ -84,6 +84,11 @@ public class StudentServiceImpl implements StudentService {
         studentRepository.delete(student);
     }
 
+    @Override
+    public List<Student> searchStudent(String keyword) {
+        return studentRepository.findByNameContainingIgnoreCaseOrCourseContainingIgnoreCase(keyword,keyword);
+    }
+
     private Student findStudentById(Long id) {
         return studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + id));

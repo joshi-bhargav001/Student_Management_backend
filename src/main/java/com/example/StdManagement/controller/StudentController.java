@@ -3,6 +3,7 @@ package com.example.StdManagement.controller;
 import com.example.StdManagement.dto.Response.ApiResponse;
 import com.example.StdManagement.dto.Request.StudentRequest;
 import com.example.StdManagement.dto.Response.StudentResponse;
+import com.example.StdManagement.entity.Student;
 import com.example.StdManagement.service.StudentService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -10,15 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/students")
@@ -67,5 +60,11 @@ public class StudentController {
         return ResponseEntity.ok(ApiResponse.builder()
                 .message("Student deleted successfully")
                 .build());
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
+    public ResponseEntity<List<Student>> searchStudent(@RequestParam String keyword) {
+        return ResponseEntity.ok(studentService.searchStudent(keyword));
     }
 }
