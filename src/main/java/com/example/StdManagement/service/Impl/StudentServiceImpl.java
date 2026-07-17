@@ -6,10 +6,15 @@ import com.example.StdManagement.entity.Student;
 import com.example.StdManagement.exception.DuplicateResourceException;
 import com.example.StdManagement.exception.ResourceNotFoundException;
 import com.example.StdManagement.repository.StudentRepository;
+
 import java.util.List;
 
 import com.example.StdManagement.service.StudentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,6 +92,18 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public List<Student> searchStudent(String keyword) {
         return studentRepository.findByNameContainingIgnoreCaseOrCourseContainingIgnoreCase(keyword,keyword);
+    }
+
+    @Override
+    public Page<StudentResponse> getAllPage(int page, int size,String sortBy, String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Student> students = studentRepository.findAll(pageable);
+
+        return students.map(this::mapToResponse);
     }
 
     private Student findStudentById(Long id) {
