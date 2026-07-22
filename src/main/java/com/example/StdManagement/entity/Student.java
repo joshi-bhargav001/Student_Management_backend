@@ -44,4 +44,6 @@ public class Student {
     // Roll number is required for each student.
     @Column(name = "rollno", nullable = false, unique = true, length = 20)
     private String rollNo;
+
+    private String photo;
 }

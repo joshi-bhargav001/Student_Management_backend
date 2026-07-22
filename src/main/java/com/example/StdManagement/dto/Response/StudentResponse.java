@@ -19,4 +19,5 @@ public class StudentResponse {
     private String course;
     private String mobile;
     private String rollNo;
+    private String photo;
 }

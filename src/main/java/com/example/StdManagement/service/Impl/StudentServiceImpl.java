@@ -7,6 +7,11 @@ import com.example.StdManagement.exception.DuplicateResourceException;
 import com.example.StdManagement.exception.ResourceNotFoundException;
 import com.example.StdManagement.repository.StudentRepository;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import com.example.StdManagement.service.StudentService;
@@ -17,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -104,6 +110,44 @@ public class StudentServiceImpl implements StudentService {
         Page<Student> students = studentRepository.findAll(pageable);
 
         return students.map(this::mapToResponse);
+    }
+
+    @Override
+    public StudentResponse uploadPhoto(Long id, MultipartFile file) throws IOException {
+        Student student = studentRepository.findById(id).orElseThrow(()->new RuntimeException("Student not found"));
+
+        String uploadDir = "uploads";
+
+        Path uploadPath = Paths.get(uploadDir);
+
+        if(!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        String fileName = id +" " + file.getOriginalFilename();
+
+        Path filePath = uploadPath.resolve(fileName);
+
+        Files.copy(file.getInputStream(),
+                filePath,
+                StandardCopyOption.REPLACE_EXISTING);
+
+        student.setPhoto(filePath.toString());
+
+        studentRepository.save(student);
+
+        return convertTOResponse(student);
+    }
+
+    private StudentResponse convertTOResponse(Student student) {
+        return StudentResponse.builder()
+                .id(student.getId())
+                .name(student.getName())
+                .email(student.getEmail())
+                .course(student.getCourse())
+                .mobile(student.getMobile())
+                .rollNo(student.getRollNo())
+                .photo(student.getPhoto())
+                .build();
     }
 
     private Student findStudentById(Long id) {

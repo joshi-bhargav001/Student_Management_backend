@@ -6,6 +6,8 @@ import com.example.StdManagement.dto.Response.StudentResponse;
 import com.example.StdManagement.entity.Student;
 import com.example.StdManagement.service.StudentService;
 import jakarta.validation.Valid;
+
+import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/students")
@@ -77,5 +80,12 @@ public class StudentController {
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String direction) {
         return ResponseEntity.ok(studentService.getAllPage(page, size, sortBy, direction));
+    }
+
+    @PostMapping("/{id}/upload-photo")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<StudentResponse> uploadPhoto(@PathVariable Long id, @RequestParam("file")MultipartFile file) throws IOException {
+        StudentResponse response = studentService.uploadPhoto(id, file);
+        return ResponseEntity.ok(response);
     }
 }
