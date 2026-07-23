@@ -97,7 +97,13 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<Student> searchStudent(String keyword) {
-        return studentRepository.findByNameContainingIgnoreCaseOrCourseContainingIgnoreCase(keyword,keyword);
+        String searchTerm = keyword == null ? "" : keyword.trim();
+
+        if (searchTerm.isEmpty()) {
+            return List.of();
+        }
+
+        return studentRepository.findByNameContainingIgnoreCaseOrCourseContainingIgnoreCase(searchTerm, searchTerm);
     }
 
     @Override

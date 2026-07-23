@@ -68,8 +68,17 @@ public class StudentController {
 
     @GetMapping("/search")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
-    public ResponseEntity<List<Student>> searchStudent(@RequestParam String keyword) {
-        return ResponseEntity.ok(studentService.searchStudent(keyword));
+    public ResponseEntity<List<Student>> searchStudent(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String course) {
+        String searchTerm = firstNonBlank(keyword, name, course);
+
+        if (searchTerm.isBlank()) {
+            return ResponseEntity.ok(List.of());
+        }
+
+        return ResponseEntity.ok(studentService.searchStudent(searchTerm));
     }
 
     @GetMapping("pages")
@@ -87,5 +96,14 @@ public class StudentController {
     public ResponseEntity<StudentResponse> uploadPhoto(@PathVariable Long id, @RequestParam("file")MultipartFile file) throws IOException {
         StudentResponse response = studentService.uploadPhoto(id, file);
         return ResponseEntity.ok(response);
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value.trim();
+            }
+        }
+        return "";
     }
 }

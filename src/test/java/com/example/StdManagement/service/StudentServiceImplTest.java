@@ -164,6 +164,30 @@ class StudentServiceImplTest {
                 .hasMessageContaining("Student not found with id: 99");
     }
 
+    @Test
+    void searchStudentMatchesCourse() {
+        Student student = student(1L, "R001", "student@example.com");
+        when(studentRepository.findByNameContainingIgnoreCaseOrCourseContainingIgnoreCase("Computer Science", "Computer Science"))
+                .thenReturn(List.of(student));
+
+        List<Student> results = studentService.searchStudent("Computer Science");
+
+        assertThat(results).containsExactly(student);
+        verify(studentRepository).findByNameContainingIgnoreCaseOrCourseContainingIgnoreCase("Computer Science", "Computer Science");
+    }
+
+    @Test
+    void searchStudentTrimsKeywordBeforeQuerying() {
+        Student student = student(1L, "R001", "student@example.com");
+        when(studentRepository.findByNameContainingIgnoreCaseOrCourseContainingIgnoreCase("Computer Science", "Computer Science"))
+                .thenReturn(List.of(student));
+
+        List<Student> results = studentService.searchStudent("  Computer Science  ");
+
+        assertThat(results).containsExactly(student);
+        verify(studentRepository).findByNameContainingIgnoreCaseOrCourseContainingIgnoreCase("Computer Science", "Computer Science");
+    }
+
     private StudentRequest request(String rollNo, String email) {
         return StudentRequest.builder()
                 .rollNo(rollNo)
