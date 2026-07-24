@@ -85,10 +85,8 @@ public class StudentController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     public ResponseEntity<Page<StudentResponse>> getAllPage(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "name") String sortBy,
-            @RequestParam(defaultValue = "asc") String direction) {
-        return ResponseEntity.ok(studentService.getAllPage(page, size, sortBy, direction));
+            @RequestParam(defaultValue = "5") int size) {
+        return ResponseEntity.ok(studentService.getAllPage(page, size));
     }
 
     @PostMapping("/{id}/upload-photo")

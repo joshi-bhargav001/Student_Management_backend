@@ -107,11 +107,11 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public Page<StudentResponse> getAllPage(int page, int size,String sortBy, String direction) {
+    public Page<StudentResponse> getAllPage(int page, int size) {
 
-        Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+//        Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
 
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Pageable pageable = PageRequest.of(page, size);
 
         Page<Student> students = studentRepository.findAll(pageable);
 

@@ -23,7 +23,7 @@ public interface StudentService{
 
     List<Student> searchStudent(String keyword);
 
-    Page<StudentResponse> getAllPage(int page, int size, String sortBy, String direction);
+    Page<StudentResponse> getAllPage(int page, int size);
 
     StudentResponse uploadPhoto(Long id, MultipartFile file) throws IOException;
 }
