@@ -9,6 +9,9 @@ import com.example.StdManagement.exception.ResourceNotFoundException;
 import com.example.StdManagement.repository.TeacherRepository;
 import com.example.StdManagement.service.TeacherService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,6 +97,26 @@ public class TeacherServiceImpl implements TeacherService {
         Teacher teacher = teacherRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("Teacher not found for delete id" + id));
         teacherRepository.delete(teacher);
+    }
+
+    @Override
+    public List<Teacher> searchTeacher(String keyword) {
+        String searchTerm = keyword == null ? "" : keyword.trim();
+
+        if(searchTerm.isEmpty()) {
+            return List.of();
+        }
+        return teacherRepository.findByNameContainingIgnoreCaseOrSubjectContainingIgnoreCase(searchTerm, searchTerm);
+    }
+
+    @Override
+    public Page<TeacherResponse> getAllPage(int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Teacher> teachers = teacherRepository.findAll(pageable);
+
+        return teachers.map(this::mapToResponse);
     }
 
     private TeacherResponse mapToResponse(Teacher teacher) {
