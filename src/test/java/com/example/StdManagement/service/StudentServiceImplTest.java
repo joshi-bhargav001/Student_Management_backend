@@ -23,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class StudentServiceImplTest {
@@ -186,6 +187,35 @@ class StudentServiceImplTest {
 
         assertThat(results).containsExactly(student);
         verify(studentRepository).findByNameContainingIgnoreCaseOrCourseContainingIgnoreCase("Computer Science", "Computer Science");
+    }
+
+    @Test
+    void uploadPhotoUpdatesStudentPhotoAndReturnsIt() throws Exception {
+        Student student = student(1L, "R001", "student@example.com");
+        when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
+        when(studentRepository.save(student)).thenReturn(student);
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "photo.png",
+                "image/png",
+                "fake-image-content".getBytes());
+
+        StudentResponse response = studentService.uploadPhoto(1L, file);
+
+        assertThat(response.getPhoto()).isNotBlank();
+        assertThat(response.getPhoto()).contains("uploads");
+        verify(studentRepository).save(student);
+    }
+
+    @Test
+    void uploadPhotoRejectsMissingFile() {
+        Student student = student(1L, "R001", "student@example.com");
+        when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
+
+        assertThatThrownBy(() -> studentService.uploadPhoto(1L, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("File is required");
     }
 
     private StudentRequest request(String rollNo, String email) {

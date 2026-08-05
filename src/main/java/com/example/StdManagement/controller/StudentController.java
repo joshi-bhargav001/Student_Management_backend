@@ -96,6 +96,21 @@ public class StudentController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{id}/photo")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    public ResponseEntity<byte[]> showPhoto(@PathVariable Long id) throws IOException {
+        return studentService.showPhoto(id);
+    }
+
+    @DeleteMapping("/{id}/delete-photo")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ApiResponse> deletePhoto(@PathVariable Long id) throws IOException {
+        studentService.deletePhoto(id);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .message("Photo deleted successfully")
+                .build());
+    }
+
     private String firstNonBlank(String... values) {
         for (String value : values) {
             if (value != null && !value.isBlank()) {

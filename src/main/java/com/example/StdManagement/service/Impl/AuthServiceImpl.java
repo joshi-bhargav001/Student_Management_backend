@@ -1,6 +1,7 @@
 package com.example.StdManagement.service.Impl;
 
 import com.example.StdManagement.dto.Request.LoginRequest;
+import com.example.StdManagement.dto.Request.RefreshRequest;
 import com.example.StdManagement.dto.Request.SignUpRequest;
 import com.example.StdManagement.dto.Response.LoginResponse;
 import com.example.StdManagement.dto.Response.SignUpResponse;
@@ -18,6 +19,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -30,6 +32,7 @@ public class AuthServiceImpl implements AuthService{
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
 
     @Override
@@ -86,13 +89,49 @@ public class AuthServiceImpl implements AuthService{
         }
 
         String token = jwtService.generateToken((UserDetails) authentication.getPrincipal());
+        String refreshToken = jwtService.generateRefreshToken((UserDetails) authentication.getPrincipal());
 
         return LoginResponse.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .username(user.getUsername())
                 .token(token)
+                .refreshToken(refreshToken)
                 .message("Login successful")
+                .role(user.getRole())
+                .build();
+    }
+
+    @Override
+    public LoginResponse refresh(RefreshRequest request) {
+        String refreshToken = request.getRefreshToken();
+        String username;
+
+        try {
+            username = jwtService.extractUsername(refreshToken);
+        } catch (Exception exception) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token"));
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
+
+        if (!jwtService.isTokenValid(refreshToken, userDetails)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
+        }
+
+        String newAccessToken = jwtService.generateToken(userDetails);
+        String newRefreshToken = jwtService.generateRefreshToken(userDetails);
+
+        return LoginResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .username(user.getUsername())
+                .token(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .message("Token refreshed successfully")
                 .role(user.getRole())
                 .build();
     }

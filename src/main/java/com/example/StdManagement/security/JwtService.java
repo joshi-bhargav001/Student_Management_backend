@@ -15,22 +15,33 @@ public class JwtService {
 
     private final String secretKey;
     private final long jwtExpiration;
+    private final long refreshTokenExpiration;
 
     public JwtService(
             @Value("${application.security.jwt.secret-key:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}")
             String secretKey,
-            @Value("${application.security.jwt.expiration:7200000}") long jwtExpiration) {
+            @Value("${application.security.jwt.expiration:7200000}") long jwtExpiration,
+            @Value("${application.security.jwt.refresh-expiration:604800000}") long refreshTokenExpiration) {
         this.secretKey = secretKey;
         this.jwtExpiration = jwtExpiration;
+        this.refreshTokenExpiration = refreshTokenExpiration;
     }
 
     public String generateToken(UserDetails userDetails) {
+        return generateToken(userDetails, jwtExpiration);
+    }
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        return generateToken(userDetails, refreshTokenExpiration);
+    }
+
+    private String generateToken(UserDetails userDetails, long expiration) {
         long now = System.currentTimeMillis();
 
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(now))
-                .expiration(new Date(now + jwtExpiration))
+                .expiration(new Date(now + expiration))
                 .signWith(getSignInKey())
                 .compact();
     }

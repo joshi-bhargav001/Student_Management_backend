@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.NoSuchFileException;
 import java.util.List;
 
 import com.example.StdManagement.service.StudentService;
@@ -20,6 +21,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -122,6 +125,10 @@ public class StudentServiceImpl implements StudentService {
     public StudentResponse uploadPhoto(Long id, MultipartFile file) throws IOException {
         Student student = studentRepository.findById(id).orElseThrow(()->new RuntimeException("Student not found"));
 
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is required");
+        }
+
         String uploadDir = "uploads";
 
         Path uploadPath = Paths.get(uploadDir);
@@ -142,6 +149,50 @@ public class StudentServiceImpl implements StudentService {
         studentRepository.save(student);
 
         return convertTOResponse(student);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<byte[]> showPhoto(Long id) throws IOException {
+        Student student = findStudentById(id);
+
+        if (student.getPhoto() == null || student.getPhoto().isBlank()) {
+            throw new ResourceNotFoundException("Photo not found for student id: " + id);
+        }
+
+        Path photoPath = Paths.get(student.getPhoto());
+        if (!Files.exists(photoPath)) {
+            throw new ResourceNotFoundException("Photo file not found for student id: " + id);
+        }
+
+        byte[] imageBytes = Files.readAllBytes(photoPath);
+        String contentType = Files.probeContentType(photoPath);
+
+        MediaType mediaType = contentType != null ? MediaType.parseMediaType(contentType) : MediaType.APPLICATION_OCTET_STREAM;
+
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .body(imageBytes);
+    }
+
+    @Override
+    public void deletePhoto(Long id) throws IOException {
+        Student student = findStudentById(id);
+
+        if (student.getPhoto() == null || student.getPhoto().isBlank()) {
+            throw new ResourceNotFoundException("Photo not found for student id: " + id);
+        }
+
+        Path photoPath = Paths.get(student.getPhoto());
+
+        try {
+            Files.deleteIfExists(photoPath);
+        } catch (NoSuchFileException exception) {
+            throw new ResourceNotFoundException("Photo file not found for student id: " + id);
+        }
+
+        student.setPhoto(null);
+        studentRepository.save(student);
     }
 
     private StudentResponse convertTOResponse(Student student) {
@@ -169,6 +220,7 @@ public class StudentServiceImpl implements StudentService {
                 .email(student.getEmail())
                 .course(student.getCourse())
                 .mobile(student.getMobile())
+                .photo(student.getPhoto())
                 .build();
     }
 }
