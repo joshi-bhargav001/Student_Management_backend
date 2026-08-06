@@ -2,17 +2,26 @@ package com.example.StdManagement.service.Impl;
 
 import com.example.StdManagement.dto.Request.LoginRequest;
 import com.example.StdManagement.dto.Request.RefreshRequest;
+import com.example.StdManagement.dto.Request.SendOtpRequest;
+import com.example.StdManagement.dto.Request.VerifyOtpRequest;
 import com.example.StdManagement.dto.Request.SignUpRequest;
 import com.example.StdManagement.dto.Response.LoginResponse;
+import com.example.StdManagement.dto.Response.SendOtpResponse;
+import com.example.StdManagement.dto.Response.VerifyOtpResponse;
 import com.example.StdManagement.dto.Response.SignUpResponse;
+import com.example.StdManagement.entity.EmailOtp;
 import com.example.StdManagement.entity.User;
 import com.example.StdManagement.enums.Role;
 import com.example.StdManagement.exception.DuplicateResourceException;
+import com.example.StdManagement.repository.EmailOtpRepository;
 import com.example.StdManagement.repository.UserRepository;
 import com.example.StdManagement.security.JwtService;
 import com.example.StdManagement.service.AuthService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.mail.MailException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,17 +32,28 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class AuthServiceImpl implements AuthService{
 
     private final UserRepository userRepository;
+    private final EmailOtpRepository emailOtpRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
+    private final JavaMailSender mailSender;
+
+    @Value("${spring.mail.username}")
+    private String fromEmail;
 
     @Override
     public SignUpResponse insertRegister(SignUpRequest request) {
@@ -134,5 +154,98 @@ public class AuthServiceImpl implements AuthService{
                 .message("Token refreshed successfully")
                 .role(user.getRole())
                 .build();
+    }
+
+    @Override
+    @Transactional(noRollbackFor = ResponseStatusException.class)
+    public SendOtpResponse sendOtp(SendOtpRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+
+        String otp = generateOtp();
+        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(5);
+
+        EmailOtp emailOtp = emailOtpRepository.findByEmail(email)
+                .map(existing -> {
+                    existing.setOtpCode(otp);
+                    existing.setOtpExpiresAt(expiresAt);
+                    return existing;
+                })
+                .orElseGet(() -> EmailOtp.builder()
+                        .email(email)
+                        .otpCode(otp)
+                        .otpExpiresAt(expiresAt)
+                        .build());
+
+        emailOtpRepository.saveAndFlush(emailOtp);
+
+        SimpleMailMessage message = buildOtpEmail(email, otp);
+
+        try {
+            mailSender.send(message);
+        } catch (MailException exception) {
+            log.error("Failed to send OTP email to {}", email, exception);
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Unable to send OTP email."
+            );
+        }
+
+        return SendOtpResponse.builder()
+                .email(email)
+                .message("OTP sent successfully. It is valid for 5 minutes.")
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public VerifyOtpResponse verifyOtp(VerifyOtpRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+        String otp = request.getOtp().trim();
+
+            EmailOtp emailOtp = emailOtpRepository.findByEmail(email)
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "OTP not found for this email."
+                    ));
+
+            if (emailOtp.getOtpCode() == null || emailOtp.getOtpExpiresAt() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OTP has not been requested.");
+            }
+
+        if (LocalDateTime.now().isAfter(emailOtp.getOtpExpiresAt())) {
+            emailOtpRepository.deleteByEmail(email);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OTP has expired.");
+        }
+
+            if (!otp.equals(emailOtp.getOtpCode())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid OTP.");
+            }
+
+        emailOtpRepository.deleteByEmail(email);
+
+        return VerifyOtpResponse.builder()
+                .email(email)
+                .message("OTP verified successfully.")
+                .build();
+    }
+
+    private String generateOtp() {
+        return String.format("%06d", new SecureRandom().nextInt(1_000_000));
+    }
+
+    private SimpleMailMessage buildOtpEmail(String email, String otp) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
+        message.setTo(email);
+        message.setSubject("Student Management System - Email Verification OTP");
+        message.setText(
+                "Hello,\n\n" +
+                        "Your OTP for account verification is: " + otp + "\n\n" +
+                        "This OTP is valid for 5 minutes.\n\n" +
+                        "Please do not share this OTP with anyone.\n\n" +
+                        "Regards,\n" +
+                        "Student Management System"
+        );
+        return message;
     }
 }

@@ -4,6 +4,8 @@ import com.example.StdManagement.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "user")
 @Getter
@@ -31,4 +33,16 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @Column(name = "otp_code")
+    private String otpCode;
+
+    @Column(name = "otp_expires_at")
+    private LocalDateTime otpExpiresAt;
+
+    @Column(name = "verified")
+    private Boolean verified;
+
+    @Column(name = "createdAt")
+    private LocalDateTime createdAt;
 }
