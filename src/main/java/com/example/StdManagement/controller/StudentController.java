@@ -81,7 +81,7 @@ public class StudentController {
         return ResponseEntity.ok(studentService.searchStudent(searchTerm));
     }
 
-    @GetMapping("pages")
+    @GetMapping("/pages")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     public ResponseEntity<Page<StudentResponse>> getAllPage(
             @RequestParam(defaultValue = "0") int page,
