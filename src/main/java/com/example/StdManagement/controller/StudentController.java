@@ -40,6 +40,27 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getAllStudents());
     }
 
+    @GetMapping("/divisions")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
+    public ResponseEntity<List<String>> getDivisionDropdown() {
+        return ResponseEntity.ok(studentService.getDivisionDropdown());
+    }
+
+    @GetMapping("/course")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
+    public ResponseEntity<List<StudentResponse>> getAllStudentsByCourse(
+            @RequestParam String course) {
+        return ResponseEntity.ok(studentService.getAllStudentsByCourse(course));
+    }
+
+    @GetMapping("/course-division")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
+    public ResponseEntity<List<StudentResponse>> getAllStudentsByCourseAndDivision(
+            @RequestParam String course,
+            @RequestParam String division) {
+        return ResponseEntity.ok(studentService.getAllStudentsByCourseAndDivision(course, division));
+    }
+
     // Get one student by id.
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")

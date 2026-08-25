@@ -13,7 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.NoSuchFileException;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import com.example.StdManagement.service.StudentService;
 import lombok.RequiredArgsConstructor;
@@ -39,15 +41,15 @@ public class StudentServiceImpl implements StudentService {
         if (studentRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("Student with email already exists: " + request.getEmail());
         }
-        if (studentRepository.existsByRollNo(request.getRollNo())) {
-            throw new DuplicateResourceException("Student with roll number already exists: " + request.getRollNo());
-        }
+
+        String rollNo = generateNextRollNo();
 
         Student student = Student.builder()
-                .rollNo(request.getRollNo())
+                .rollNo(rollNo)
                 .name(request.getName())
                 .email(request.getEmail())
                 .course(request.getCourse())
+                .division(request.getDivision())
                 .mobile(request.getMobile())
                 .build();
 
@@ -66,6 +68,44 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<StudentResponse> getAllStudentsByCourse(String course) {
+        String searchTerm = course == null ? "" : course.trim();
+
+        if (searchTerm.isEmpty()) {
+            return getAllStudents();
+        }
+
+        return studentRepository.findByCourseIgnoreCase(searchTerm)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StudentResponse> getAllStudentsByCourseAndDivision(String course, String division) {
+        String courseTerm = course == null ? "" : course.trim();
+        String divisionTerm = division == null ? "" : division.trim();
+
+        if (courseTerm.isEmpty() || divisionTerm.isEmpty()) {
+            return getAllStudents();
+        }
+
+        return studentRepository
+                .findByCourseIgnoreCaseAndDivisionIgnoreCase(courseTerm, divisionTerm)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getDivisionDropdown() {
+        return studentRepository.findDistinctDivisions();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public StudentResponse getStudentById(Long id) {
         Student student = findStudentById(id);
         return mapToResponse(student);
@@ -78,14 +118,11 @@ public class StudentServiceImpl implements StudentService {
         if (studentRepository.existsByEmailAndIdNot(request.getEmail(), id)) {
             throw new DuplicateResourceException("Student with email already exists: " + request.getEmail());
         }
-        if (studentRepository.existsByRollNoAndIdNot(request.getRollNo(), id)) {
-            throw new DuplicateResourceException("Student with roll number already exists: " + request.getRollNo());
-        }
 
         student.setName(request.getName());
-        student.setRollNo(request.getRollNo());
         student.setEmail(request.getEmail());
         student.setCourse(request.getCourse());
+        student.setDivision(request.getDivision());
         student.setMobile(request.getMobile());
 
         Student updatedStudent = studentRepository.save(student);
@@ -201,6 +238,7 @@ public class StudentServiceImpl implements StudentService {
                 .name(student.getName())
                 .email(student.getEmail())
                 .course(student.getCourse())
+                .division(student.getDivision())
                 .mobile(student.getMobile())
                 .rollNo(student.getRollNo())
                 .photo(student.getPhoto())
@@ -219,8 +257,33 @@ public class StudentServiceImpl implements StudentService {
                 .name(student.getName())
                 .email(student.getEmail())
                 .course(student.getCourse())
+                .division(student.getDivision())
                 .mobile(student.getMobile())
                 .photo(student.getPhoto())
                 .build();
+    }
+
+    private String generateNextRollNo() {
+        String prefix = "R";
+
+        int nextNumber = studentRepository.findAll().stream()
+                .map(Student::getRollNo)
+                .filter(rollNo -> rollNo != null && rollNo.matches("^R\\d+$"))
+                .map(rollNo -> rollNo.substring(1))
+                .mapToInt(Integer::parseInt)
+                .max()
+                .orElse(0) + 1;
+
+        String candidate = formatRollNo(prefix, nextNumber);
+        while (studentRepository.existsByRollNo(candidate)) {
+            nextNumber++;
+            candidate = formatRollNo(prefix, nextNumber);
+        }
+
+        return candidate;
+    }
+
+    private String formatRollNo(String prefix, int number) {
+        return prefix + String.format("%03d", number);
     }
 }

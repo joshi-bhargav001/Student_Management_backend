@@ -30,7 +30,10 @@ public class CourseController {
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
-    public ResponseEntity<List<CourseResponse>> allCourse() {
+    public ResponseEntity<?> allCourse(@RequestParam(required = false) Boolean dropdown) {
+        if (Boolean.TRUE.equals(dropdown)) {
+            return ResponseEntity.ok(courseService.getCourseDropdown());
+        }
         return ResponseEntity.ok(courseService.allCourse());
     }
 

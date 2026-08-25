@@ -12,6 +12,8 @@ public interface CourseService {
 
     List<CourseResponse> allCourse();
 
+    List<String> getCourseDropdown();
+
     Page<CourseResponse> getCoursePage(int page, int size);
 
     CourseResponse updateCourse(Long id, CourseRequest request);

@@ -37,6 +37,10 @@ public class Student {
     @Column(nullable = false)
     private String course;
 
+    // Division or section assigned to the student.
+    @Column(nullable = false)
+    private String division;
+
     // Mobile number is kept as text because phone numbers are not used for math.
     @Column(nullable = false, length = 15)
     private String mobile;

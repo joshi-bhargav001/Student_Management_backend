@@ -53,6 +53,15 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<String> getCourseDropdown() {
+        return courseRepository.findAll()
+                .stream()
+                .map(Course::getCourseName)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Page<CourseResponse> getCoursePage(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return courseRepository.findAll(pageable)

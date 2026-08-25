@@ -30,11 +30,12 @@ public class StudentRequest {
     @Size(max = 100, message = "Course must be at most 100 characters")
     private String course;
 
+    @NotBlank(message = "Division is required")
+    @Size(max = 20, message = "Division must be at most 20 characters")
+    private String division;
+
     @NotBlank(message = "Mobile number is required")
     @Pattern(regexp = "^[0-9]{10}$", message = "Mobile number must contain exactly 10 digits")
     private String mobile;
 
-    @NotBlank(message = "Roll number is required")
-    @Size(max = 20, message = "Roll number must be at most 20 characters")
-    private String rollNo;
 }

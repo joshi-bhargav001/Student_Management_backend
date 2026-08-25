@@ -16,6 +16,12 @@ public interface StudentService{
 
     List<StudentResponse> getAllStudents();
 
+    List<StudentResponse> getAllStudentsByCourse(String course);
+
+    List<StudentResponse> getAllStudentsByCourseAndDivision(String course, String division);
+
+    List<String> getDivisionDropdown();
+
     StudentResponse getStudentById(Long id);
 
     StudentResponse updateStudent(Long id, StudentRequest request);

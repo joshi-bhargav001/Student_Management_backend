@@ -17,6 +17,7 @@ public class StudentResponse {
     private String name;
     private String email;
     private String course;
+    private String division;
     private String mobile;
     private String rollNo;
     private String photo;

@@ -36,7 +36,7 @@ class StudentServiceImplTest {
 
     @Test
     void createStudentRejectsDuplicateEmail() {
-        StudentRequest request = request("R001", "same@example.com");
+        StudentRequest request = request("same@example.com");
         when(studentRepository.existsByEmail("same@example.com")).thenReturn(true);
 
         assertThatThrownBy(() -> studentService.createStudent(request))
@@ -47,40 +47,33 @@ class StudentServiceImplTest {
     }
 
     @Test
-    void createStudentRejectsDuplicateRollNo() {
-        StudentRequest request = request("R001", "student@example.com");
-        when(studentRepository.existsByRollNo("R001")).thenReturn(true);
-
-        assertThatThrownBy(() -> studentService.createStudent(request))
-                .isInstanceOf(DuplicateResourceException.class)
-                .hasMessageContaining("roll number already exists");
-
-        verify(studentRepository, never()).save(any(Student.class));
-    }
-
-    @Test
-    void updateStudentRejectsDuplicateRollNoUsedByAnotherStudent() {
-        StudentRequest request = request("R002", "student@example.com");
-        Student student = student(1L, "R001", "old@example.com");
-        when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
-        when(studentRepository.existsByRollNoAndIdNot("R002", 1L)).thenReturn(true);
-
-        assertThatThrownBy(() -> studentService.updateStudent(1L, request))
-                .isInstanceOf(DuplicateResourceException.class)
-                .hasMessageContaining("roll number already exists");
-
-        verify(studentRepository, never()).save(any(Student.class));
-    }
-
-    @Test
     void createStudentReturnsRollNoInResponse() {
-        StudentRequest request = request("R001", "student@example.com");
-        Student saved = student(1L, "R001", "student@example.com");
+        StudentRequest request = request("student@example.com");
+        when(studentRepository.findAll()).thenReturn(List.of(
+                student(1L, "R001", "existing1@example.com"),
+                student(2L, "R002", "existing2@example.com")));
+        Student saved = student(3L, "R003", "student@example.com");
         when(studentRepository.save(any(Student.class))).thenReturn(saved);
 
         StudentResponse response = studentService.createStudent(request);
 
-        assertThat(response.getRollNo()).isEqualTo("R001");
+        assertThat(response.getRollNo()).isEqualTo("R003");
+    }
+
+    @Test
+    void createStudentSkipsExistingGeneratedRollNumbers() {
+        StudentRequest request = request("student@example.com");
+        when(studentRepository.findAll()).thenReturn(List.of(
+                student(1L, "R001", "existing1@example.com"),
+                student(2L, "R002", "existing2@example.com")));
+        when(studentRepository.existsByRollNo("R003")).thenReturn(true);
+        when(studentRepository.existsByRollNo("R004")).thenReturn(false);
+        Student saved = student(3L, "R004", "student@example.com");
+        when(studentRepository.save(any(Student.class))).thenReturn(saved);
+
+        StudentResponse response = studentService.createStudent(request);
+
+        assertThat(response.getRollNo()).isEqualTo("R004");
     }
 
     @Test
@@ -119,14 +112,14 @@ class StudentServiceImplTest {
 
     @Test
     void updateStudentSavesChangedFields() {
-        StudentRequest request = request("R002", "updated@example.com");
+        StudentRequest request = request("updated@example.com");
         Student student = student(1L, "R001", "old@example.com");
         when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
         when(studentRepository.save(student)).thenReturn(student);
 
         StudentResponse response = studentService.updateStudent(1L, request);
 
-        assertThat(response.getRollNo()).isEqualTo("R002");
+        assertThat(response.getRollNo()).isEqualTo("R001");
         assertThat(response.getEmail()).isEqualTo("updated@example.com");
         assertThat(response.getName()).isEqualTo("Student Name");
         verify(studentRepository).save(student);
@@ -134,7 +127,7 @@ class StudentServiceImplTest {
 
     @Test
     void updateStudentRejectsDuplicateEmailUsedByAnotherStudent() {
-        StudentRequest request = request("R001", "duplicate@example.com");
+        StudentRequest request = request("duplicate@example.com");
         Student student = student(1L, "R001", "old@example.com");
         when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
         when(studentRepository.existsByEmailAndIdNot("duplicate@example.com", 1L)).thenReturn(true);
@@ -218,12 +211,12 @@ class StudentServiceImplTest {
                 .hasMessageContaining("File is required");
     }
 
-    private StudentRequest request(String rollNo, String email) {
+    private StudentRequest request(String email) {
         return StudentRequest.builder()
-                .rollNo(rollNo)
                 .name("Student Name")
                 .email(email)
                 .course("Computer Science")
+                .division("A")
                 .mobile("9876543210")
                 .build();
     }
