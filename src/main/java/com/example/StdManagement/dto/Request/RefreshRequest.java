@@ -1,4 +1,4 @@
-package com.example.StdManagement.dto;
+package com.example.StdManagement.dto.Request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ApiResponse {
+public class RefreshRequest {
 
-    private String message;
+    private String refreshToken;
 }
