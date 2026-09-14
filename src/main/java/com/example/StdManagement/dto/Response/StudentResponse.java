@@ -1,4 +1,4 @@
-package com.example.StdManagement.dto;
+package com.example.StdManagement.dto.Response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +17,8 @@ public class StudentResponse {
     private String name;
     private String email;
     private String course;
+    private String division;
     private String mobile;
     private String rollNo;
+    private String photo;
 }
