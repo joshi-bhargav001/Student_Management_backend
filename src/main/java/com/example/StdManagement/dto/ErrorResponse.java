@@ -1,4 +1,4 @@
-package com.example.StdManagement.dto.Response;
+package com.example.StdManagement.dto;
 
 import java.time.LocalDateTime;
 import java.util.Map;
